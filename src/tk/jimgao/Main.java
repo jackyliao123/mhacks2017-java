@@ -99,7 +99,7 @@ public class Main {
         graphics.dispose();
     }
 
-    static final double MAX_DIST_CORRELATE = 60;
+    static final double MAX_DIST_CORRELATE = 200;
 
     public static void main(String[] args) throws Exception {
         httpclient = HttpClients.createDefault();
@@ -158,50 +158,49 @@ public class Main {
 
                 JSONObject recResults = result.getJSONObject("recognitionResult");
                 JSONArray lines = recResults.getJSONArray("lines");
-
                 for (int i = 0; i < lines.length(); i++) {
-                    JSONArray words = lines.getJSONObject(i).getJSONArray("words");
+                    JSONArray boundingBox = lines.getJSONObject(i).getJSONArray("boundingBox");
+                    int sx = 0, sy = 0;
 
-                    for (int j = 0; j < words.length(); j++) {
-                        JSONArray boundingBox = words.getJSONObject(j).getJSONArray("boundingBox");
-                        int sx = 0, sy = 0;
+                    for (int k = 0; k < 4; k++) {
+                        sx += boundingBox.getInt(k * 2);
+                        sy += boundingBox.getInt(k * 2 + 1);
+                    }
 
-                        for (int k = 0; k < 4; k++) {
-                            sx += boundingBox.getInt(k * 2);
-                            sy += boundingBox.getInt(k * 2 + 1);
-                        }
+                    sx /= 4;
+                    sy /= 4;
 
-                        sx /= 4;
-                        sy /= 4;
-
-                        int compID = 0;
-                        double best = Double.POSITIVE_INFINITY;
-                        for (int k = 0; k < comp.size(); k++) {
-                            double alt = comp.get(k).distanceTo(sx, sy);
-                            if (alt < comp.get(compID).distanceTo(sx, sy)) {
-                                compID = k;
-                                best = alt;
-                            }
-                        }
-
-
-                        String lbl = words.getJSONObject(j).getString("text");
-                        comp.get(compID).param = lbl;
-
-                        if (best < MAX_DIST_CORRELATE) {
-                            if (lbl.toLowerCase().contains("f")) {
-                                comp.get(compID).type = "capacitor";
-                            } else if (lbl.toLowerCase().contains("h")) {
-                                comp.get(compID).type = "inductor";
-                            } else if (lbl.toLowerCase().contains("r")) {
-                                comp.get(compID).type = "resistor";
-                            } else if (lbl.toLowerCase().contains("q")) {
-                                comp.get(compID).type = "transistor";
-                            } else if (lbl.toLowerCase().contains("d")) {
-                                comp.get(compID).type = "diode";
-                            }
+                    int compID = 0;
+                    double best = Double.POSITIVE_INFINITY;
+                    for (int k = 0; k < comp.size(); k++) {
+                        double alt = comp.get(k).distanceTo(sx, sy);
+                        if (alt < comp.get(compID).distanceTo(sx, sy)) {
+                            compID = k;
+                            best = alt;
                         }
                     }
+
+
+                    String lbl = lines.getJSONObject(i).getString("text").replaceAll(" ", "").replaceAll("\t", "");
+                    System.out.println("Label: " + lbl);
+                    comp.get(compID).param = lbl;
+
+                    if (best < MAX_DIST_CORRELATE) {
+                        System.out.printf("Updating from %s to ", comp.get(compID).type);
+                        if (lbl.toLowerCase().contains("f")) {
+                            comp.get(compID).type = "capacitor";
+                        } else if (lbl.toLowerCase().contains("h")) {
+                            comp.get(compID).type = "inductor";
+                        } else if (lbl.toLowerCase().contains("r")) {
+                            comp.get(compID).type = "resistor";
+                        } else if (lbl.toLowerCase().contains("q")) {
+                            comp.get(compID).type = "transistor";
+                        } else if (lbl.toLowerCase().contains("d")) {
+                            comp.get(compID).type = "diode";
+                        }
+                        System.out.printf("%s\n", comp.get(compID).type);
+                    }
+
                 }
             }
 
