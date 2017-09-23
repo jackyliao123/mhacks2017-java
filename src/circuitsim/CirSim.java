@@ -774,6 +774,12 @@ public class CirSim extends Frame
 				    elm.setPoints();
 				    elmList.add(elm);
 			    	break;
+			    case "resistor":
+				    System.out.printf("Resistor: %d %d, %d %d\n", comp.x, comp.y, comp.x + comp.width, comp.y + comp.height);
+				    elm = new ResistorElm(comp.x, comp.y, comp.x + comp.width, comp.y + comp.height, 0, new StringTokenizer("32"));
+				    elm.setPoints();
+				    elmList.add(elm);
+				    break;
 		    }
 	    }
     	for(Wire wire : wires) {

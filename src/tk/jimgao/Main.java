@@ -148,7 +148,7 @@ public class Main {
                 while (true) {
                     System.out.println("fuck");
                     result = fetchResult(loc);
-                    System.out.println(result.getString("status"));
+                    System.out.println(result);
                     if (!result.isNull("status") && result.getString("status").equals("Succeeded")) {
                         break;
                     }
