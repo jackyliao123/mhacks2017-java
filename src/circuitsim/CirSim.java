@@ -764,17 +764,25 @@ public class CirSim extends Frame
     int framerate = 0, steprate = 0;
 
     public void parseComponents(ArrayList<Component> components, ArrayList<Wire> wires) {
-    	elmList.clear();
+    	elmList.removeAllElements();
 	    for(Component comp : components) {
+	    	CircuitElm elm = null;
 	    	switch(comp.type) {
-			    case "resistor":
-			    	elmList.add(new ResistorElm(comp.x, comp.y, comp.x + comp.width, comp.y + comp.height, 0, new StringTokenizer("32")));
+			    case "capacitor":
+				    System.out.printf("Capacitor: %d %d, %d %d\n", comp.x, comp.y, comp.x + comp.width, comp.y + comp.height);
+				    elm = new CapacitorElm(comp.x, comp.y, comp.x + comp.width, comp.y + comp.height, 0, new StringTokenizer("32 0"));
+				    elm.setPoints();
+				    elmList.add(elm);
 			    	break;
 		    }
 	    }
     	for(Wire wire : wires) {
-	    	elmList.add(new WireElm(wire.x1, wire.y1, wire.x2, wire.y2, 0, new StringTokenizer("")));
+		    System.out.printf("Wire: %d %d %d %d\n", wire.x1, wire.y1, wire.x2, wire.y2);
+	    	CircuitElm elm = new WireElm(wire.x1, wire.y1, wire.x2, wire.y2, 0, new StringTokenizer(""));
+		    elm.setPoints();
+		    elmList.add(elm);
 	    }
+	    needAnalyze();
     }
 
     public void updateCircuit(Graphics realg) {

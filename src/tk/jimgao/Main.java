@@ -146,8 +146,10 @@ public class Main {
                 String loc = submitImage(im);
                 JSONObject result = null;
                 while (true) {
+                    System.out.println("fuck");
                     result = fetchResult(loc);
-                    if (!result.isNull("status") && result.getString("status").equals("Success")) {
+                    System.out.println(result.getString("status"));
+                    if (!result.isNull("status") && result.getString("status").equals("Succeeded")) {
                         break;
                     }
                     Thread.sleep(200);
@@ -187,7 +189,7 @@ public class Main {
                         comp.get(compID).param = lbl;
 
                         if (best < MAX_DIST_CORRELATE) {
-                            if (lbl.toLowerCase().contains("uf")) {
+                            if (lbl.toLowerCase().contains("f")) {
                                 comp.get(compID).type = "capacitor";
                             } else if (lbl.toLowerCase().contains("h")) {
                                 comp.get(compID).type = "inductor";
@@ -245,6 +247,8 @@ public class Main {
                         break;
                 }
             }
+
+            System.out.println("Finish reading");
 
             for (Wire w : wires) {
                 int k = connSrc.size();
