@@ -3,8 +3,8 @@
 ohms.txt Ohm's Law
 resistors.txt Resistors
 cap.txt Capacitor
-induct.txt circuitsim.Inductor
->lrc.txt LRC circuitsim.Circuit
+induct.txt Inductor
+lrc.txt LRC Circuit
 voltdivide.txt Voltage Divider
 pot.txt Potentiometer
 potdivide.txt Potentiometer Divider
@@ -13,7 +13,7 @@ norton.txt Norton's Theorem
 -
 +A/C Circuits
 capac.txt Capacitor
-inductac.txt circuitsim.Inductor
+inductac.txt Inductor
 capmultcaps.txt Caps of Various Capacitances
 capmultfreq.txt Caps w/ Various Frequencies
 indmultind.txt Inductors of Various Inductances
@@ -82,12 +82,12 @@ phaseseq.txt Phase-Sequence Network
 lissa.txt Lissajous Figures
 -
 +Diodes
-diodevar.txt circuitsim.Diode
-diodecurve.txt circuitsim.Diode I/V Curve
+diodevar.txt Diode
+diodecurve.txt Diode I/V Curve
 rectify.txt Half-Wave Rectifier
 fullrect.txt Full-Wave Rectifier
 fullrectf.txt Full-Wave Rectifier w/ Filter
-diodelimit.txt circuitsim.Diode Limiter
+diodelimit.txt Diode Limiter
 +Zener Diodes
 zeneriv.txt I/V Curve
 zenerref.txt Voltage Reference
@@ -126,7 +126,7 @@ triangle.txt Triangle Wave Generator
 sine.txt Sine Wave Generator
 sawtooth.txt Sawtooth Wave Generator
 vco.txt Voltage-Controlled Oscillator
-rossler.txt Rossler circuitsim.Circuit
+rossler.txt Rossler Circuit
 -
 amp-rect.txt Half-Wave Rectifier (inverting)
 amp-fullrect.txt Full-Wave Rectifier
@@ -353,7 +353,7 @@ scractrig.txt AC Trigger
 +Current Conveyor
 cc2.txt CCII+
 cc2n.txt CCII-
-ccinductor.txt circuitsim.Inductor Simulator
+ccinductor.txt Inductor Simulator
 cc2imp.txt CCII+ Implementation
 cc2impn.txt CCII- Implementation
 cciamp.txt Current Amplifier
@@ -368,4 +368,4 @@ tesla.txt Tesla Coil
 spark-marx.txt Marx Generator
 -
 -
-blank.txt Blank circuitsim.Circuit
+>blank.txt Blank Circuit

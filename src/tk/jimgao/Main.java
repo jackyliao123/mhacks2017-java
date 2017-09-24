@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
@@ -101,13 +102,55 @@ public class Main {
 
     static final double MAX_DIST_CORRELATE = 500;
 
+    public static HashMap<Character, Double> siSuffix = new HashMap<Character, Double>();
+
+    static {
+        siSuffix.put('p', 1e-12);
+        siSuffix.put('n', 1e-9);
+        siSuffix.put('u', 1e-6);
+        siSuffix.put('m', 1e-3);
+        siSuffix.put('k', 1e+3);
+        siSuffix.put('M', 1e+6);
+        siSuffix.put('G', 1e+9);
+        siSuffix.put('T', 1e+12);
+    }
+
+    public static char flipCase(char c) {
+        if('a' <= c && c <= 'z') {
+            c = (char)(c - 'a' + 'A');
+        } else if('A' <= c && c <= 'Z') {
+            c = (char)(c - 'A' + 'a');
+        }
+        return c;
+    }
+
+    public static double parseStringFuzzy(String s) {
+        // TODO FUZZY PARSING
+        return Double.parseDouble(s);
+    }
+
+    public static double parseSI(String s) {
+        if(s == null)
+            return 0;
+        char lastChar = s.charAt(s.length() - 1);
+        String str = s.substring(0, s.length() - 1);
+        if(siSuffix.containsKey(lastChar)) {
+            return parseStringFuzzy(str) * siSuffix.get(lastChar);
+        } else if(siSuffix.containsKey(flipCase(lastChar))) {
+            return parseStringFuzzy(str) * siSuffix.get(flipCase(lastChar));
+        }
+        System.err.println("Parsing number failed: " + s);
+        return 0;
+    }
+
     public static void main(String[] args) throws Exception {
         httpclient = HttpClients.createDefault();
 
-        ProcessBuilder builder = new ProcessBuilder("Mhacks x live.exe");
+        ProcessBuilder builder = new ProcessBuilder("/usr/bin/wine", "Mhacks x live.exe");
         Process process = builder.start();
-
+//
         Scanner reader = new Scanner(new InputStreamReader(process.getInputStream()));
+//        Scanner reader = new Scanner(System.in);
         ArrayList<Component> comp = new ArrayList<>();
         ArrayList<Wire> wires = new ArrayList<>();
 
@@ -142,6 +185,9 @@ public class Main {
 
                 wires.add(new Wire(x1, y1, x2, y2));
             }
+
+            if(!Circuit.ogf.liveCheck.getState())
+                continue;
 
             if (iter % 20 == 0) {
                 BufferedImage im;

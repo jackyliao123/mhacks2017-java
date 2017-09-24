@@ -3,13 +3,17 @@ package circuitsim;// circuitsim.CirSim.java (c) 2010 by Paul Falstad
 // For information about the theory behind this, see Electronic circuitsim.Circuit & System Simulation Methods by Pillage
 
 import tk.jimgao.Component;
+import tk.jimgao.Main;
 import tk.jimgao.Wire;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FilterInputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -44,6 +48,7 @@ public class CirSim extends Frame
             cutItem, copyItem, pasteItem, selectAllItem, optionsItem;
     Menu optionsMenu;
     Checkbox stoppedCheck;
+    public Checkbox liveCheck;
     CheckboxMenuItem dotsCheckItem;
     CheckboxMenuItem voltsCheckItem;
     CheckboxMenuItem powerCheckItem;
@@ -462,6 +467,11 @@ public class CirSim extends Frame
         stoppedCheck.addItemListener(this);
         main.add(stoppedCheck);
 
+        liveCheck = new Checkbox("Live feed");
+        liveCheck.setState(true);
+        liveCheck.addItemListener(this);
+        main.add(liveCheck);
+
         main.add(new Label("Simulation Speed", Label.CENTER));
 
         // was max of 140
@@ -785,18 +795,22 @@ public class CirSim extends Frame
             int x2 = snapGrid(comp.cx[1]);
             int y1 = snapGrid(comp.cy[0]);
             int y2 = snapGrid(comp.cy[1]);
+            String param = null;
+            if(comp.param != null) {
+                param = comp.param.substring(comp.param.length() - 1);
+            }
             switch (comp.type) {
                 case "capacitor":
                     System.out.printf("Capacitor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new CapacitorElm(x1, y1, x2, y2, 0, new StringTokenizer("31 0"));
+                    elm = new CapacitorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param) + " 0"));
                     break;
                 case "resistor":
                     System.out.printf("Resistor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new ResistorElm(x1, y1, x2, y2, 0, new StringTokenizer("31"));
+                    elm = new ResistorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param) + ""));
                     break;
                 case "diode":
                     System.out.printf("Diode: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new DiodeElm(x1, y1, x2, y2, 0, new StringTokenizer("31"));
+                    elm = new DiodeElm(x1, y1, x2, y2, 0, new StringTokenizer("0.7"));
                     break;
                 case "LED":
                     System.out.printf("LED: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
@@ -804,19 +818,19 @@ public class CirSim extends Frame
                     break;
                 case "inductor":
                     System.out.printf("Inductor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new InductorElm(x1, y1, x2, y2, 0, new StringTokenizer("31 0"));
+                    elm = new InductorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param) + " 0"));
                     break;
                 case "transistor":
                     System.out.printf("Transistor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new TransistorElm(x1, y1, x1, y1, 0, new StringTokenizer("31"));
+                    elm = new TransistorElm(x1, y1, x1, y1, 0, new StringTokenizer(param.equalsIgnoreCase("pnp") ? "1" : "0"));
                     break;
                 case "source":
                     System.out.printf("Source: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new RailElm(x2, y2, x1, y1, 0, new StringTokenizer("0 0 5"));
+                    elm = new RailElm(x2, y2, x1, y1, 0, new StringTokenizer("0 0 " + Main.parseSI(param)));
                     break;
                 case "ground":
                     System.out.printf("Ground: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new GroundElm(snapGrid(comp.x), snapGrid(comp.y), snapGrid(comp.x), snapGrid(comp.y + 20), 0, new StringTokenizer("31"));
+                    elm = new GroundElm(snapGrid(comp.x), snapGrid(comp.y), snapGrid(comp.x), snapGrid(comp.y + 20), 0, new StringTokenizer(""));
                     break;
             }
             if (elm != null) {
@@ -869,6 +883,8 @@ public class CirSim extends Frame
         }
         if (currImg != null)
             g.drawImage(currImg, 0, 0, this);
+        g.setColor(new Color(0, 0, 0, 128));
+        g.fillRect(0, 0, winSize.width, winSize.height);
 
         if (!stoppedCheck.getState()) {
             try {
