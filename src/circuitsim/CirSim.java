@@ -464,6 +464,7 @@ public class CirSim extends Frame
         //main.add(dumpMatrixButton);
         dumpMatrixButton.addActionListener(this);
         stoppedCheck = new Checkbox("Stopped");
+        stoppedCheck.setState(true);
         stoppedCheck.addItemListener(this);
         main.add(stoppedCheck);
 
@@ -797,16 +798,16 @@ public class CirSim extends Frame
             int y2 = snapGrid(comp.cy[1]);
             String param = null;
             if(comp.param != null && comp.param.length() >= 1) {
-                param = comp.param.substring(comp.param.length() - 1);
+                param = comp.param.substring(0, comp.param.length() - 1);
             }
             switch (comp.type) {
                 case "capacitor":
                     System.out.printf("Capacitor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new CapacitorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param) + " 0"));
+                    elm = new CapacitorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param, 1e-6) + " 10"));
                     break;
                 case "resistor":
                     System.out.printf("Resistor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new ResistorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param) + ""));
+                    elm = new ResistorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param, 100) + ""));
                     break;
                 case "diode":
                     System.out.printf("Diode: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
@@ -818,7 +819,7 @@ public class CirSim extends Frame
                     break;
                 case "inductor":
                     System.out.printf("Inductor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new InductorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param) + " 0"));
+                    elm = new InductorElm(x1, y1, x2, y2, 0, new StringTokenizer(Main.parseSI(param, 1) + " 0"));
                     break;
                 case "transistor":
                     System.out.printf("Transistor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
@@ -826,7 +827,7 @@ public class CirSim extends Frame
                     break;
                 case "source":
                     System.out.printf("Source: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new RailElm(x2, y2, x1, y1, 0, new StringTokenizer("0 0 " + Main.parseSI(param)));
+                    elm = new RailElm(x2, y2, x1, y1, 0, new StringTokenizer("0 0 " + Main.parseSI(param, 5)));
                     break;
                 case "ground":
                     System.out.printf("Ground: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);

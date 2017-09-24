@@ -123,17 +123,54 @@ public class Main {
     }
 
     public static double parseStringFuzzy(String s) {
-        // TODO FUZZY PARSING
+        char[] table = new char[256];
+        table['b'] = '6';
+        table['f'] = '1';
+        table['g'] = '9';
+        table['h'] = '6';
+        table['i'] = '1';
+        table['j'] = '1';
+        table['k'] = '6';
+        table['l'] = '1';
+        table['m'] = table['n'] = table['o'] = '0';
+        table['q'] = '9';
+        table['s'] = '5';
+        table['u'] = '0';
+        table['y'] = '9';
+
+        table['B'] = '8';
+        table['C'] = table['D'] = '0';
+        table['E'] = '8';
+        table['G'] = '6';
+        table['H'] = '8';
+        table['I'] = table['J'] = table['L'] = '1';
+        table['O'] = table['Q'] = '0';
+        table['S'] = '5';
+        table['T'] = '1';
+        table['U'] = '0';
+
+        String converted = "";
+
+        for(char c : s.toCharArray()) {
+            if(table[c] != 0) {
+                converted += table[c];
+            } else {
+                converted += c;
+            }
+        }
+
         try {
-            return Double.parseDouble(s);
+            return Double.parseDouble(converted);
         } catch (NumberFormatException e) {
             return 1;
         }
     }
 
-    public static double parseSI(String s) {
+
+
+    public static double parseSI(String s, double def) {
         if (s == null)
-            return 0;
+            return def;
         char lastChar = s.charAt(s.length() - 1);
         String str = s.substring(0, s.length() - 1);
         if (siSuffix.containsKey(lastChar)) {
@@ -142,13 +179,16 @@ public class Main {
             return parseStringFuzzy(str) * siSuffix.get(flipCase(lastChar));
         }
         System.err.println("Parsing number failed: " + s);
-        return 1;
+        return def;
     }
 
     public static void main(String[] args) throws Exception {
+
+
+
         httpclient = HttpClients.createDefault();
 
-        ProcessBuilder builder = new ProcessBuilder("Mhacks x live.exe");
+        ProcessBuilder builder = new ProcessBuilder("Mhacks x.exe"); //0 params-default vid, 1=webcam, 2=bmp
         Process process = builder.start();
         final InputStream err = process.getErrorStream();
 
@@ -175,18 +215,17 @@ public class Main {
         JSONObject result = null;
         long lastMilli = 0;
         while (true) {
-            System.out.println("Start reading");
             int status = reader.nextInt();
             if (status == 0) continue;
             comp.clear();
             wires.clear();
 
-            System.out.println("Scanner read 1 int");
+//            System.out.println("Scanner read 1 int");
 
             int N = reader.nextInt();
             int M = reader.nextInt();
 
-            System.out.println("Read N and M, " + N + ", " + M);
+//            System.out.println("Read N and M, " + N + ", " + M);
 
             for (int i = 0; i < N; i++) {
                 String type = reader.next();
@@ -198,7 +237,7 @@ public class Main {
                 comp.add(new Component(type, x, y, width, height));
             }
 
-            System.out.println("Read components");
+//            System.out.println("Read components");
 
             for (int i = 0; i < M; i++) {
                 int x1 = reader.nextInt();
@@ -206,12 +245,12 @@ public class Main {
                 int x2 = reader.nextInt();
                 int y2 = reader.nextInt();
 
-                System.out.println("Read 1 wire");
+//                System.out.println("Read 1 wire");
                 wires.add(new Wire(x1, y1, x2, y2));
-                System.out.println("Added 1 wire");
+//                System.out.println("Added 1 wire");
             }
 
-            System.out.println("Read wires");
+//            System.out.println("Read wires");
 
             if (!Circuit.ogf.liveCheck.getState())
                 continue;
