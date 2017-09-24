@@ -20,13 +20,13 @@ public class Component {
         orientation = width > height ? "horizontal" : "vertical";
         if (type.equals("transistor") || orientation.equals("horizontal")) {
             cx[0] = x;
-            cx[1] = x + width;
             cy[0] = y + height / 2;
+            cx[1] = x + width;
             cy[1] = y + height / 2;
         } else {
             cx[0] = x + width / 2;
-            cx[1] = x + width / 2;
             cy[0] = y;
+            cx[1] = x + width / 2;
             cy[1] = y + height;
         }
 
