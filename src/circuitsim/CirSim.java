@@ -33,7 +33,7 @@ public class CirSim extends Frame
     public static final double freqMult = 3.14159265*2*4;
 
     public String getAppletInfo() {
-	return "circuitsim.Circuit by Paul Falstad";
+	return "Circuit by Paul Falstad";
     }
 
     static Container main;
@@ -157,7 +157,7 @@ public class CirSim extends Frame
     Circuit applet;
 
     CirSim(Circuit a) {
-	super("circuitsim.Circuit Simulator v1.6i");
+	super("Circuit Simulator v1.6i");
 	applet = a;
 	useFrame = false;
     }
@@ -282,7 +282,7 @@ public class CirSim extends Frame
 	else
 	    mainMenu.add(m);
 
-	m = new Menu("circuitsim.Scope");
+	m = new Menu("Scope");
 	if (useFrame)
 	    mb.add(m);
 	else
@@ -324,7 +324,7 @@ public class CirSim extends Frame
 	Menu passMenu = new Menu("Passive Components");
 	mainMenu.add(passMenu);
 	passMenu.add(getClassCheckItem("Add Capacitor", "circuitsim.CapacitorElm"));
-	passMenu.add(getClassCheckItem("Add circuitsim.Inductor", "circuitsim.InductorElm"));
+	passMenu.add(getClassCheckItem("Add Inductor", "circuitsim.InductorElm"));
 	passMenu.add(getClassCheckItem("Add Switch", "circuitsim.SwitchElm"));
 	passMenu.add(getClassCheckItem("Add Push Switch", "circuitsim.PushSwitchElm"));
 	passMenu.add(getClassCheckItem("Add SPDT Switch", "circuitsim.Switch2Elm"));
@@ -363,8 +363,8 @@ public class CirSim extends Frame
 
 	Menu activeMenu = new Menu("Active Components");
 	mainMenu.add(activeMenu);
-	activeMenu.add(getClassCheckItem("Add circuitsim.Diode", "circuitsim.DiodeElm"));
-	activeMenu.add(getClassCheckItem("Add Zener circuitsim.Diode", "circuitsim.ZenerElm"));
+	activeMenu.add(getClassCheckItem("Add Diode", "circuitsim.DiodeElm"));
+	activeMenu.add(getClassCheckItem("Add Zener Diode", "circuitsim.ZenerElm"));
 	activeMenu.add(getClassCheckItem("Add Transistor (bipolar, NPN)",
 				    "circuitsim.NTransistorElm"));
 	activeMenu.add(getClassCheckItem("Add Transistor (bipolar, PNP)",
@@ -387,7 +387,7 @@ public class CirSim extends Frame
 	activeMenu.add(getClassCheckItem("Add Schmitt Trigger (Inverting)", "circuitsim.InvertingSchmittElm"));
 	activeMenu.add(getClassCheckItem("Add SCR", "circuitsim.SCRElm"));
 	//activeMenu.add(getClassCheckItem("Add Varactor/Varicap", "VaractorElm"));
-	activeMenu.add(getClassCheckItem("Add Tunnel circuitsim.Diode", "circuitsim.TunnelDiodeElm"));
+	activeMenu.add(getClassCheckItem("Add Tunnel Diode", "circuitsim.TunnelDiodeElm"));
 	activeMenu.add(getClassCheckItem("Add Triode", "circuitsim.TriodeElm"));
 	//activeMenu.add(getClassCheckItem("Add Diac", "circuitsim.DiacElm"));
 	//activeMenu.add(getClassCheckItem("Add Triac", "circuitsim.TriacElm"));
@@ -434,7 +434,7 @@ public class CirSim extends Frame
 	mainMenu.add(otherMenu);
 	otherMenu.add(getClassCheckItem("Add Text", "circuitsim.TextElm"));
 	otherMenu.add(getClassCheckItem("Add Box", "circuitsim.BoxElm"));
-	otherMenu.add(getClassCheckItem("Add circuitsim.Scope Probe", "circuitsim.ProbeElm"));
+	otherMenu.add(getClassCheckItem("Add Scope Probe", "circuitsim.ProbeElm"));
 	otherMenu.add(getCheckItem("Drag All (Alt-drag)", "DragAll"));
 	otherMenu.add(getCheckItem(
 			  isMac ? "Drag Row (Alt-S-drag, S-right)" :
@@ -485,7 +485,7 @@ public class CirSim extends Frame
 	    main.add(new Label(""));
 	Font f = new Font("SansSerif", 0, 10);
 	Label l;
-	l = new Label("Current circuitsim.Circuit:");
+	l = new Label("Current Circuit:");
 	l.setFont(f);
 	titleLabel = new Label("Label");
 	titleLabel.setFont(f);
@@ -510,7 +510,7 @@ public class CirSim extends Frame
 
 	elmMenu = new PopupMenu();
 	elmMenu.add(elmEditMenuItem = getMenuItem("Edit"));
-	elmMenu.add(elmScopeMenuItem = getMenuItem("View in circuitsim.Scope"));
+	elmMenu.add(elmScopeMenuItem = getMenuItem("View in Scope"));
 	elmMenu.add(elmCutMenuItem = getMenuItem("Cut"));
 	elmMenu.add(elmCopyMenuItem = getMenuItem("Copy"));
 	elmMenu.add(elmDeleteMenuItem = getMenuItem("Delete"));
@@ -767,6 +767,14 @@ public class CirSim extends Frame
     	elmList.removeAllElements();
 	    for(Wire wire : wires) {
 		    System.out.printf("Wire: %d %d %d %d\n", wire.x1, wire.y1, wire.x2, wire.y2);
+		    if(wire.c1 != null && Wire.pinLookup.containsKey(wire.c1Name)) {
+		    	wire.c1.cx[Wire.pinLookup.get(wire.c1Name)] = wire.x1;
+			    wire.c1.cy[Wire.pinLookup.get(wire.c1Name)] = wire.y1;
+		    }
+		    if(wire.c2 != null && Wire.pinLookup.containsKey(wire.c2Name)) {
+			    wire.c2.cx[Wire.pinLookup.get(wire.c2Name)] = wire.x2;
+			    wire.c2.cy[Wire.pinLookup.get(wire.c2Name)] = wire.y2;
+		    }
 //		    if(wire.c1 != null) {
 //			    wire.c1.cx1 = wire.x1;
 //			    wire.c1.cy1 = wire.y1;
@@ -775,20 +783,24 @@ public class CirSim extends Frame
 //			    wire.c2.cx2 = wire.x2;
 //			    wire.c2.cy2 = wire.y2;
 //		    }
-		    CircuitElm elm = new WireElm(wire.x1, wire.y1, wire.x2, wire.y2, 0, new StringTokenizer(""));
+		    CircuitElm elm = new WireElm(snapGrid(wire.x1), snapGrid(wire.y1), snapGrid(wire.x2), snapGrid(wire.y2), 0, new StringTokenizer(""));
 		    elm.setPoints();
 		    elmList.add(elm);
 	    }
 	    for(Component comp : components) {
 	    	CircuitElm elm = null;
+	    	int x1 = snapGrid(comp.cx[0]);
+		    int x2 = snapGrid(comp.cx[1]);
+		    int y1 = snapGrid(comp.cy[0]);
+		    int y2 = snapGrid(comp.cy[1]);
 	    	switch(comp.type) {
 			    case "capacitor":
-				    System.out.printf("Capacitor: %d %d, %d %d\n", comp.cx1, comp.cy1, comp.cy1, comp.cy2);
-				    elm = new CapacitorElm(comp.cx1, comp.cy1, comp.cx2, comp.cy2, 0, new StringTokenizer("32 0"));
+				    System.out.printf("Capacitor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cy[0], comp.cy[1]);
+				    elm = new CapacitorElm(x1, y1, x2, y2, 0, new StringTokenizer("31 0"));
 			    	break;
 			    case "resistor":
-				    System.out.printf("Resistor: %d %d, %d %d\n", comp.cx1, comp.cy1, comp.cy1, comp.cy2);
-				    elm = new ResistorElm(comp.cx1, comp.cy1, comp.cx2, comp.cy2, 0, new StringTokenizer("32"));
+				    System.out.printf("Resistor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cy[0], comp.cy[1]);
+				    elm = new ResistorElm(x1, y1, x2, y2, 0, new StringTokenizer("31"));
 				    break;
 		    }
 		    if(elm != null) {

@@ -99,10 +99,10 @@ public class Main {
         graphics.dispose();
     }
 
-    static final double MAX_DIST_CORRELATE = 200;
+    static final double MAX_DIST_CORRELATE = 500;
 
     public static void main(String[] args) throws Exception {
-        httpclient = HttpClients.createDefault();
+         httpclient = HttpClients.createDefault();
 
 //        ProcessBuilder builder = new ProcessBuilder("capture.exe");
 //        Process process = builder.start();
@@ -116,6 +116,8 @@ public class Main {
         Circuit.main(new String[0]);
 
         while (true) {
+            int status=reader.nextInt();
+            if(status==0)continue;
             comp.clear();
             wires.clear();
 
@@ -142,11 +144,10 @@ public class Main {
             }
 
             if (iter % 10 == 0) {
-                BufferedImage im = ImageIO.read(new File("camera.png"));
+                BufferedImage im = ImageIO.read(new File("text.png"));
                 String loc = submitImage(im);
                 JSONObject result = null;
                 while (true) {
-                    System.out.println("fuck");
                     result = fetchResult(loc);
                     System.out.println(result);
                     if (!result.isNull("status") && result.getString("status").equals("Succeeded")) {
@@ -160,13 +161,26 @@ public class Main {
                 JSONArray lines = recResults.getJSONArray("lines");
                 for (int i = 0; i < lines.length(); i++) {
                     JSONArray boundingBox = lines.getJSONObject(i).getJSONArray("boundingBox");
-                    int sx = 0, sy = 0;
+                    String lbl = lines.getJSONObject(i).getString("text").replaceAll(" ", "").replaceAll("\t", "");
+                    int txtX = boundingBox.getInt(0);
+                    int txtY = boundingBox.getInt(1);
+                    int txtW = boundingBox.getInt(4) - txtX;
+                    int txtH = boundingBox.getInt(4) - txtY;
 
+                    if (lbl.toLowerCase().contains("v")) {
+                        Component c = new Component("source", txtX, txtY, txtW, txtH);
+                        c.param = lbl;
+                        comp.add(c);
+                    } else if (lbl.toLowerCase().equals("gnd")) {
+                        Component c = new Component("ground", txtX, txtY, txtW, txtH);
+                        comp.add(c);
+                    }
+
+                    int sx = 0, sy = 0;
                     for (int k = 0; k < 4; k++) {
                         sx += boundingBox.getInt(k * 2);
                         sy += boundingBox.getInt(k * 2 + 1);
                     }
-
                     sx /= 4;
                     sy /= 4;
 
@@ -180,8 +194,6 @@ public class Main {
                         }
                     }
 
-
-                    String lbl = lines.getJSONObject(i).getString("text").replaceAll(" ", "").replaceAll("\t", "");
                     System.out.println("Label: " + lbl);
                     comp.get(compID).param = lbl;
 
@@ -200,7 +212,6 @@ public class Main {
                         }
                         System.out.printf("%s\n", comp.get(compID).type);
                     }
-
                 }
             }
 
@@ -289,6 +300,5 @@ public class Main {
 
             Circuit.ogf.parseComponents(comp, wires);
         }
-
     }
 }
