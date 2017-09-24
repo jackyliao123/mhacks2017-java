@@ -104,7 +104,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         httpclient = HttpClients.createDefault();
 
-        ProcessBuilder builder = new ProcessBuilder("Mhacks x.exe");
+        ProcessBuilder builder = new ProcessBuilder("Mhacks x live.exe");
         Process process = builder.start();
 
         Scanner reader = new Scanner(new InputStreamReader(process.getInputStream()));
@@ -287,8 +287,8 @@ public class Main {
                     case "source":
                         connName.add("point1");
                         connSrc.add(c);
-                        x.add(c.x);
-                        y.add(c.y);
+                        x.add(c.cx[0]);
+                        y.add(c.cy[0]);
                         break;
                 }
             }

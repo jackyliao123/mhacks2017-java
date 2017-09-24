@@ -5,11 +5,11 @@ package circuitsim;// circuitsim.CirSim.java (c) 2010 by Paul Falstad
 import tk.jimgao.Component;
 import tk.jimgao.Wire;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FilterInputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -756,14 +756,15 @@ public class CirSim extends Frame
         elmList.removeAllElements();
         for (Wire wire : wires) {
             System.out.printf("Wire: %d %d %d %d\n", wire.x1, wire.y1, wire.x2, wire.y2);
-            if (wire.c1 != null && Wire.pinLookup.containsKey(wire.c1Name)) {
-                wire.c1.cx[Wire.pinLookup.get(wire.c1Name)] = wire.x1;
-                wire.c1.cy[Wire.pinLookup.get(wire.c1Name)] = wire.y1;
-            }
-            if (wire.c2 != null && Wire.pinLookup.containsKey(wire.c2Name)) {
-                wire.c2.cx[Wire.pinLookup.get(wire.c2Name)] = wire.x2;
-                wire.c2.cy[Wire.pinLookup.get(wire.c2Name)] = wire.y2;
-            }
+            //TODO idk
+//            if (wire.c1 != null && Wire.pinLookup.containsKey(wire.c1Name)) {
+//                wire.c1.cx[Wire.pinLookup.get(wire.c1Name)] = wire.x1;
+//                wire.c1.cy[Wire.pinLookup.get(wire.c1Name)] = wire.y1;
+//            }
+//            if (wire.c2 != null && Wire.pinLookup.containsKey(wire.c2Name)) {
+//                wire.c2.cx[Wire.pinLookup.get(wire.c2Name)] = wire.x2;
+//                wire.c2.cy[Wire.pinLookup.get(wire.c2Name)] = wire.y2;
+//            }
 //		    if(wire.c1 != null) {
 //			    wire.c1.cx1 = wire.x1;
 //			    wire.c1.cy1 = wire.y1;
@@ -772,7 +773,7 @@ public class CirSim extends Frame
 //			    wire.c2.cx2 = wire.x2;
 //			    wire.c2.cy2 = wire.y2;
 //		    }
-            if(snapGrid(wire.x1) == snapGrid(wire.x2) && snapGrid(wire.y1) == snapGrid(wire.y2))
+            if (snapGrid(wire.x1) == snapGrid(wire.x2) && snapGrid(wire.y1) == snapGrid(wire.y2))
                 continue;
             CircuitElm elm = new WireElm(snapGrid(wire.x1), snapGrid(wire.y1), snapGrid(wire.x2), snapGrid(wire.y2), 0, new StringTokenizer(""));
             elm.setPoints();
@@ -811,7 +812,7 @@ public class CirSim extends Frame
                     break;
                 case "source":
                     System.out.printf("Source: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new RailElm(snapGrid(comp.x), snapGrid(comp.y), snapGrid(comp.x-20), snapGrid(comp.y ), 0, new StringTokenizer("0 0 5"));
+                    elm = new RailElm(x2, y2, x1, y1, 0, new StringTokenizer("0 0 5"));
                     break;
                 case "ground":
                     System.out.printf("Ground: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
@@ -826,6 +827,8 @@ public class CirSim extends Frame
         this.repaint();
         needAnalyze();
     }
+
+    private BufferedImage currImg;
 
     public synchronized void updateCircuit(Graphics realg) {
         CircuitElm realMouseElm;
@@ -858,6 +861,14 @@ public class CirSim extends Frame
         g.fillRect(0, 0, winSize.width, winSize.height);
 
         //TODO DRAW IMAGE
+        try {
+            BufferedImage newImg = ImageIO.read(new File("frame.png"));
+            if (newImg != null)
+                currImg = newImg;
+        } catch (IOException e) {
+        }
+        if (currImg != null)
+            g.drawImage(currImg, 0, 0, this);
 
         if (!stoppedCheck.getState()) {
             try {
@@ -897,7 +908,7 @@ public class CirSim extends Frame
             if (powerCheckItem.getState())
                 g.setColor(Color.gray);
         /*else if (conductanceCheckItem.getState())
-	      g.setColor(Color.white);*/
+          g.setColor(Color.white);*/
             getElm(i).draw(g);
         }
         if (tempMouseMode == MODE_DRAG_ROW || tempMouseMode == MODE_DRAG_COLUMN ||
@@ -932,7 +943,7 @@ public class CirSim extends Frame
                     }
                 }
             }
-	/*if (mouseElm != null) {
+    /*if (mouseElm != null) {
 	    g.setFont(oldfont);
 	    g.drawString("+", mouseElm.x+10, mouseElm.y);
 	    }*/
