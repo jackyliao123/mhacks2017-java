@@ -104,17 +104,17 @@ public class Main {
     public static void main(String[] args) throws Exception {
         httpclient = HttpClients.createDefault();
 
-//        ProcessBuilder builder = new ProcessBuilder("capture.exe");
-//        Process process = builder.start();
+        ProcessBuilder builder = new ProcessBuilder("Mhacks x.exe");
+        Process process = builder.start();
 
-        Scanner reader = new Scanner(new InputStreamReader(System.in));
+        Scanner reader = new Scanner(new InputStreamReader(process.getInputStream()));
         ArrayList<Component> comp = new ArrayList<>();
         ArrayList<Wire> wires = new ArrayList<>();
 
         int iter = 0;
 
         Circuit.main(new String[0]);
-
+        JSONObject result = null;
         while (true) {
             int status = reader.nextInt();
             if (status == 0) continue;
@@ -143,20 +143,32 @@ public class Main {
                 wires.add(new Wire(x1, y1, x2, y2));
             }
 
-            if (iter % 10 == 0) {
-                BufferedImage im = ImageIO.read(new File("text.png"));
+            if (iter % 20 == 0) {
+                BufferedImage im;
+                while((im = ImageIO.read(new File("text.png")))==null);
                 String loc = submitImage(im);
-                JSONObject result = null;
+
                 while (true) {
                     result = fetchResult(loc);
+                    Circuit.ogf.repaint();
+                    Thread.sleep(50);
+                    Circuit.ogf.repaint();
                     System.out.println(result);
+                    Circuit.ogf.repaint();
+                    Thread.sleep(50);
+                    Circuit.ogf.repaint();
                     if (!result.isNull("status") && result.getString("status").equals("Succeeded")) {
                         break;
                     }
-                    Thread.sleep(200);
-                }
-                iter++;
+                    Circuit.ogf.repaint();
+                    Thread.sleep(50);
+                    Circuit.ogf.repaint();
 
+                }
+            }
+            iter++;
+
+            if (result != null) {
                 JSONObject recResults = result.getJSONObject("recognitionResult");
                 JSONArray lines = recResults.getJSONArray("lines");
                 for (int i = 0; i < lines.length(); i++) {
@@ -165,7 +177,7 @@ public class Main {
                     int txtX = boundingBox.getInt(0);
                     int txtY = boundingBox.getInt(1);
                     int txtW = boundingBox.getInt(4) - txtX;
-                    int txtH = boundingBox.getInt(4) - txtY;
+                    int txtH = boundingBox.getInt(5) - txtY;
 
                     if (lbl.toLowerCase().contains("v")) {
                         Component c = new Component("source", txtX, txtY, txtW, txtH);
@@ -184,13 +196,13 @@ public class Main {
                     sx /= 4;
                     sy /= 4;
 
-                    int compID = 0;
+                    int compID = -1;
                     double best = Double.POSITIVE_INFINITY;
                     for (int k = 0; k < comp.size(); k++) {
-                        if (comp.get(k).type.equals("junction")/* || comp.get(k).type.equals("crossover")*/) continue;
+                        if (comp.get(k).type.equals("junction")) continue;
 
                         double alt = comp.get(k).distanceTo(sx, sy);
-                        if (alt < comp.get(compID).distanceTo(sx, sy)) {
+                        if (alt < best) {
                             compID = k;
                             best = alt;
                         }
@@ -201,8 +213,10 @@ public class Main {
 
                     if (best < MAX_DIST_CORRELATE) {
                         System.out.printf("Updating from %s to ", comp.get(compID).type);
-                        if (lbl.toLowerCase().contains("f")) {
-                            comp.get(compID).type = "capacitor";
+                        if (lbl.equals("LED")) {
+                            comp.get(compID).type = "LED";
+                        } else if (lbl.toLowerCase().equals("gnd")) {
+                            comp.get(compID).type = "ground";
                         } else if (lbl.toLowerCase().contains("h")) {
                             comp.get(compID).type = "inductor";
                         } else if (lbl.toLowerCase().contains("r")) {
@@ -211,6 +225,10 @@ public class Main {
                             comp.get(compID).type = "transistor";
                         } else if (lbl.toLowerCase().contains("d")) {
                             comp.get(compID).type = "diode";
+                        } else if (lbl.toLowerCase().contains("v")) {
+                            comp.get(compID).type = "source";
+                        } else if (lbl.toLowerCase().contains("f")) {
+                            comp.get(compID).type = "capacitor";
                         }
                         System.out.printf("%s\n", comp.get(compID).type);
                     }
@@ -227,19 +245,16 @@ public class Main {
                     case "capacitor":
                     case "inductor":
                     case "resistor":
-                        connName.add("point1");
-                        connName.add("point2");
                     case "diode":
+                    case "LED":
                         connSrc.add(c);
                         x.add(c.cx[0]);
                         y.add(c.cy[0]);
                         connSrc.add(c);
                         x.add(c.cx[1]);
                         y.add(c.cy[1]);
-                        if (c.type.equals("diode")) {
-                            connName.add("point1");
-                            connName.add("point2");
-                        }
+                        connName.add("point1");
+                        connName.add("point2");
                         break;
                     case "transistor":
                         connName.add("base");
@@ -263,23 +278,17 @@ public class Main {
                         x.add(c.x);
                         y.add(c.y);
                         break;
-                    case "crossover":
-                        connName.add("top");
-                        connSrc.add(c);
-                        x.add(c.x + c.width / 2);
-                        y.add(c.y);
-                        connName.add("bottom");
-                        connSrc.add(c);
-                        x.add(c.x + c.width / 2);
-                        y.add(c.y + c.height);
-                        connName.add("left");
+                    case "ground":
+                        connName.add("point1");
                         connSrc.add(c);
                         x.add(c.x);
-                        y.add(c.y + c.height / 2);
-                        connName.add("right");
+                        y.add(c.y);
+                        break;
+                    case "source":
+                        connName.add("point1");
                         connSrc.add(c);
-                        x.add(c.x + c.width);
-                        y.add(c.y + c.height / 2);
+                        x.add(c.x);
+                        y.add(c.y);
                         break;
                 }
             }
@@ -287,6 +296,7 @@ public class Main {
             System.out.println("Finish reading");
 
             for (Wire w : wires) {
+
                 int k = connSrc.size();
                 double mini = Double.POSITIVE_INFINITY;
                 int best = -1;
