@@ -102,7 +102,7 @@ public class Main {
     static final double MAX_DIST_CORRELATE = 500;
 
     public static void main(String[] args) throws Exception {
-         httpclient = HttpClients.createDefault();
+        httpclient = HttpClients.createDefault();
 
 //        ProcessBuilder builder = new ProcessBuilder("capture.exe");
 //        Process process = builder.start();
@@ -116,8 +116,8 @@ public class Main {
         Circuit.main(new String[0]);
 
         while (true) {
-            int status=reader.nextInt();
-            if(status==0)continue;
+            int status = reader.nextInt();
+            if (status == 0) continue;
             comp.clear();
             wires.clear();
 
@@ -187,6 +187,8 @@ public class Main {
                     int compID = 0;
                     double best = Double.POSITIVE_INFINITY;
                     for (int k = 0; k < comp.size(); k++) {
+                        if (comp.get(k).type.equals("junction") || comp.get(k).type.equals("crossover")) continue;
+
                         double alt = comp.get(k).distanceTo(sx, sy);
                         if (alt < comp.get(compID).distanceTo(sx, sy)) {
                             compID = k;
@@ -229,11 +231,11 @@ public class Main {
                         connName.add("point2");
                     case "diode":
                         connSrc.add(c);
-                        x.add(c.x);
-                        y.add(c.y + c.height / 2);
+                        x.add(c.cx[0]);
+                        y.add(c.cy[0]);
                         connSrc.add(c);
-                        x.add(c.x + c.width);
-                        y.add(c.y + c.height / 2);
+                        x.add(c.cx[1]);
+                        y.add(c.cy[1]);
                         if (c.type.equals("diode")) {
                             connName.add("point1");
                             connName.add("point2");
@@ -254,6 +256,30 @@ public class Main {
                         connSrc.add(c);
                         x.add(c.x + c.width);
                         y.add(c.y + c.height);
+                        break;
+                    case "junction":
+                        connName.add("point1");
+                        connSrc.add(c);
+                        x.add(c.x);
+                        y.add(c.y);
+                        break;
+                    case "crossover":
+                        connName.add("top");
+                        connSrc.add(c);
+                        x.add(c.x + c.width / 2);
+                        y.add(c.y);
+                        connName.add("bottom");
+                        connSrc.add(c);
+                        x.add(c.x + c.width / 2);
+                        y.add(c.y + c.height);
+                        connName.add("left");
+                        connSrc.add(c);
+                        x.add(c.x);
+                        y.add(c.y + c.height / 2);
+                        connName.add("right");
+                        connSrc.add(c);
+                        x.add(c.x + c.width);
+                        y.add(c.y + c.height / 2);
                         break;
                 }
             }

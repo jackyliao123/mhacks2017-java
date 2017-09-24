@@ -9,20 +9,30 @@ public class Component {
     public int width;
     public int height;
     public String param;
+    public String orientation;
 
-    public Component(String a, int b, int c, int d, int e){
+    public Component(String a, int b, int c, int d, int e) {
         type = a;
         x = b;
         y = c;
         width = d;
         height = e;
-        cx[0] = x;
-        cx[1] = x + width;
-        cy[0] = y;
-        cy[1] = y + height;
+        orientation = width > height ? "horizontal" : "vertical";
+        if (type.equals("transistor") || orientation.equals("horizontal")) {
+            cx[0] = x;
+            cx[1] = x + width;
+            cy[0] = y + height / 2;
+            cy[1] = y + height / 2;
+        } else {
+            cx[0] = x + width / 2;
+            cx[1] = x + width / 2;
+            cy[0] = y;
+            cy[1] = y + height;
+        }
+
     }
 
-    public double distanceTo(int xx, int yy){
+    public double distanceTo(int xx, int yy) {
         return Math.sqrt(Math.pow(x + width / 2 - xx, 2) + Math.pow(y + height / 2 - yy, 2));
     }
 }
