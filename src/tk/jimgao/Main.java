@@ -16,9 +16,7 @@ import org.json.JSONObject;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -100,7 +98,7 @@ public class Main {
         graphics.dispose();
     }
 
-    static final double MAX_DIST_CORRELATE = 500;
+    static final double MAX_DIST_CORRELATE = 300;
 
     public static HashMap<Character, Double> siSuffix = new HashMap<Character, Double>();
 
@@ -116,56 +114,79 @@ public class Main {
     }
 
     public static char flipCase(char c) {
-        if('a' <= c && c <= 'z') {
-            c = (char)(c - 'a' + 'A');
-        } else if('A' <= c && c <= 'Z') {
-            c = (char)(c - 'A' + 'a');
+        if ('a' <= c && c <= 'z') {
+            c = (char) (c - 'a' + 'A');
+        } else if ('A' <= c && c <= 'Z') {
+            c = (char) (c - 'A' + 'a');
         }
         return c;
     }
 
     public static double parseStringFuzzy(String s) {
         // TODO FUZZY PARSING
-        return Double.parseDouble(s);
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            return 1;
+        }
     }
 
     public static double parseSI(String s) {
-        if(s == null)
+        if (s == null)
             return 0;
         char lastChar = s.charAt(s.length() - 1);
         String str = s.substring(0, s.length() - 1);
-        if(siSuffix.containsKey(lastChar)) {
+        if (siSuffix.containsKey(lastChar)) {
             return parseStringFuzzy(str) * siSuffix.get(lastChar);
-        } else if(siSuffix.containsKey(flipCase(lastChar))) {
+        } else if (siSuffix.containsKey(flipCase(lastChar))) {
             return parseStringFuzzy(str) * siSuffix.get(flipCase(lastChar));
         }
         System.err.println("Parsing number failed: " + s);
-        return 0;
+        return 1;
     }
 
     public static void main(String[] args) throws Exception {
         httpclient = HttpClients.createDefault();
 
-        ProcessBuilder builder = new ProcessBuilder("/usr/bin/wine", "Mhacks x live.exe");
+        ProcessBuilder builder = new ProcessBuilder("Mhacks x live.exe");
         Process process = builder.start();
+        final InputStream err = process.getErrorStream();
+
+        new Thread() {
+            public void run() {
+                int read;
+                byte[] b = new byte[4096];
+                try {
+                    while ((read = err.read(b, 0, 4096)) != -1) {
+                        System.err.print(new String(b, 0, read));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
 //
         Scanner reader = new Scanner(new InputStreamReader(process.getInputStream()));
 //        Scanner reader = new Scanner(System.in);
         ArrayList<Component> comp = new ArrayList<>();
         ArrayList<Wire> wires = new ArrayList<>();
 
-        int iter = 0;
-
         Circuit.main(new String[0]);
         JSONObject result = null;
+        long lastMilli = 0;
         while (true) {
+            System.out.println("Start reading");
             int status = reader.nextInt();
             if (status == 0) continue;
             comp.clear();
             wires.clear();
 
+            System.out.println("Scanner read 1 int");
+
             int N = reader.nextInt();
             int M = reader.nextInt();
+
+            System.out.println("Read N and M, " + N + ", " + M);
 
             for (int i = 0; i < N; i++) {
                 String type = reader.next();
@@ -177,44 +198,66 @@ public class Main {
                 comp.add(new Component(type, x, y, width, height));
             }
 
+            System.out.println("Read components");
+
             for (int i = 0; i < M; i++) {
                 int x1 = reader.nextInt();
                 int y1 = reader.nextInt();
                 int x2 = reader.nextInt();
                 int y2 = reader.nextInt();
 
+                System.out.println("Read 1 wire");
                 wires.add(new Wire(x1, y1, x2, y2));
+                System.out.println("Added 1 wire");
             }
 
-            if(!Circuit.ogf.liveCheck.getState())
+            System.out.println("Read wires");
+
+            if (!Circuit.ogf.liveCheck.getState())
                 continue;
 
-            if (iter % 20 == 0) {
-                BufferedImage im;
-                while((im = ImageIO.read(new File("text.png")))==null);
-                String loc = submitImage(im);
+            System.out.println("a");
+            long currTime = System.currentTimeMillis();
+            if (currTime - lastMilli > 100) {
+                lastMilli = currTime;
+                BufferedImage im = null;
+                Circuit.ogf.repaint();
+                Thread.sleep(50);
+                Circuit.ogf.repaint();
+                int cnt = 0;
+                try {
+                    while (cnt < 3 && (im = ImageIO.read(new File("text.png"))) == null) cnt++;
 
-                while (true) {
-                    result = fetchResult(loc);
-                    Circuit.ogf.repaint();
-                    Thread.sleep(50);
-                    Circuit.ogf.repaint();
-                    System.out.println(result);
-                    Circuit.ogf.repaint();
-                    Thread.sleep(50);
-                    Circuit.ogf.repaint();
-                    if (!result.isNull("status") && result.getString("status").equals("Succeeded")) {
-                        break;
+                } catch (Exception e) {
+                }
+                if (im != null) {
+                    System.out.println("b");
+                    String loc = submitImage(im);
+
+                    long tStart = System.currentTimeMillis();
+                    while (System.currentTimeMillis() - tStart < 1000) {
+                        System.out.println("d");
+                        result = fetchResult(loc);
+                        Circuit.ogf.repaint();
+                        Thread.sleep(50);
+                        Circuit.ogf.repaint();
+                        System.out.println(result);
+                        Circuit.ogf.repaint();
+                        Thread.sleep(50);
+                        Circuit.ogf.repaint();
+                        if (!result.isNull("status") && result.getString("status").equals("Succeeded")) {
+                            break;
+                        }
+                        Circuit.ogf.repaint();
+                        Thread.sleep(50);
+                        Circuit.ogf.repaint();
+
                     }
-                    Circuit.ogf.repaint();
-                    Thread.sleep(50);
-                    Circuit.ogf.repaint();
-
                 }
             }
-            iter++;
+            System.out.println("c");
 
-            if (result != null) {
+            if (result != null && (!result.isNull("status") && result.getString("status").equals("Succeeded"))) {
                 JSONObject recResults = result.getJSONObject("recognitionResult");
                 JSONArray lines = recResults.getJSONArray("lines");
                 for (int i = 0; i < lines.length(); i++) {
@@ -254,10 +297,9 @@ public class Main {
                         }
                     }
 
-                    System.out.println("Label: " + lbl);
-                    comp.get(compID).param = lbl;
-
                     if (best < MAX_DIST_CORRELATE) {
+                        System.out.println("Label: " + lbl);
+                        comp.get(compID).param = lbl;
                         System.out.printf("Updating from %s to ", comp.get(compID).type);
                         if (lbl.equals("LED")) {
                             comp.get(compID).type = "LED";
@@ -265,7 +307,7 @@ public class Main {
                             comp.get(compID).type = "ground";
                         } else if (lbl.toLowerCase().contains("h")) {
                             comp.get(compID).type = "inductor";
-                        } else if (lbl.toLowerCase().contains("r")) {
+                        } else if (lbl.toLowerCase().contains("r") || lbl.toLowerCase().contains("k")) {
                             comp.get(compID).type = "resistor";
                         } else if (lbl.toLowerCase().contains("q")) {
                             comp.get(compID).type = "transistor";
@@ -354,7 +396,7 @@ public class Main {
                     }
                 }
 
-                if (best > MAX_DIST_CORRELATE) continue;
+                if (mini > MAX_DIST_CORRELATE) continue;
                 w.c1 = connSrc.get(best);
                 w.x1 = x.get(best);
                 w.y1 = y.get(best);
@@ -371,7 +413,7 @@ public class Main {
                     }
                 }
 
-                if (best > MAX_DIST_CORRELATE) continue;
+                if (mini > MAX_DIST_CORRELATE) continue;
                 w.c2 = connSrc.get(best);
                 w.x2 = x.get(best);
                 w.y2 = y.get(best);
@@ -381,6 +423,8 @@ public class Main {
             System.out.println("Finished parsing");
 
             Circuit.ogf.parseComponents(comp, wires);
+
+            System.out.println("Finished updating");
         }
     }
 }

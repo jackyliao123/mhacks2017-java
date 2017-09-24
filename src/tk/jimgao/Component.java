@@ -8,8 +8,8 @@ public class Component {
     public int[] cy = new int[2];
     public int width;
     public int height;
-    public String param;
-    public String orientation;
+    public String param="";
+    public String orientation="";
 
     public Component(String a, int b, int c, int d, int e) {
         type = a;

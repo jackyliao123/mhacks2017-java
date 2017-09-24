@@ -163,7 +163,7 @@ public class CirSim extends Frame
     Circuit applet;
 
     CirSim(Circuit a) {
-        super("Circuit Simulator v1.6i");
+        super("Circular Viewer");
         applet = a;
         useFrame = false;
     }
@@ -796,7 +796,7 @@ public class CirSim extends Frame
             int y1 = snapGrid(comp.cy[0]);
             int y2 = snapGrid(comp.cy[1]);
             String param = null;
-            if(comp.param != null) {
+            if(comp.param != null && comp.param.length() >= 1) {
                 param = comp.param.substring(comp.param.length() - 1);
             }
             switch (comp.type) {
@@ -822,7 +822,7 @@ public class CirSim extends Frame
                     break;
                 case "transistor":
                     System.out.printf("Transistor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
-                    elm = new TransistorElm(x1, y1, x1, y1, 0, new StringTokenizer(param.equalsIgnoreCase("pnp") ? "1" : "0"));
+                    elm = new TransistorElm(x1, y1, x1, y1, 0, new StringTokenizer("0"));//param.equalsIgnoreCase("pnp") ? "1" : "0"
                     break;
                 case "source":
                     System.out.printf("Source: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cx[1], comp.cy[1]);
@@ -874,15 +874,15 @@ public class CirSim extends Frame
         }
         g.fillRect(0, 0, winSize.width, winSize.height);
 
-        //TODO DRAW IMAGE
-        try {
-            BufferedImage newImg = ImageIO.read(new File("frame.png"));
-            if (newImg != null)
-                currImg = newImg;
-        } catch (IOException e) {
-        }
-        if (currImg != null)
-            g.drawImage(currImg, 0, 0, this);
+//        //TODO DRAW IMAGE
+//        try {
+//            BufferedImage newImg = ImageIO.read(new File("frame.png"));
+//            if (newImg != null)
+//                currImg = newImg;
+//        } catch (IOException e) {
+//        }
+//        if (currImg != null)
+//            g.drawImage(currImg, 0, 0, this);
         g.setColor(new Color(0, 0, 0, 128));
         g.fillRect(0, 0, winSize.width, winSize.height);
 
@@ -1806,8 +1806,8 @@ public class CirSim extends Frame
         double r0 = 1 / r;
         if (Double.isNaN(r0) || Double.isInfinite(r0)) {
             System.out.print("bad resistance " + r + " " + r0 + "\n");
-            int a = 0;
-            a /= a;
+//            int a = 0;
+//            a /= a;
         }
         stampMatrix(n1, n1, r0);
         stampMatrix(n2, n2, r0);
