@@ -224,8 +224,8 @@ public class Main {
                         x.add(c.x + c.width);
                         y.add(c.y + c.height / 2);
                         if (c.type.equals("diode")) {
-                            connName.add("anode");
-                            connName.add("cathode");
+                            connName.add("point1");
+                            connName.add("point2");
                         }
                         break;
                     case "transistor":

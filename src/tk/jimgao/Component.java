@@ -1,11 +1,13 @@
 package tk.jimgao;
 
-import java.util.HashMap;
-
 public class Component {
     public String type;
     public int x;
     public int y;
+    public int cx1;
+    public int cy1;
+    public int cx2;
+    public int cy2;
     public int width;
     public int height;
     public String param;

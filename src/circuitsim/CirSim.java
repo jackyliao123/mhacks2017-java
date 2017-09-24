@@ -765,28 +765,36 @@ public class CirSim extends Frame
 
     public void parseComponents(ArrayList<Component> components, ArrayList<Wire> wires) {
     	elmList.removeAllElements();
+	    for(Wire wire : wires) {
+		    System.out.printf("Wire: %d %d %d %d\n", wire.x1, wire.y1, wire.x2, wire.y2);
+//		    if(wire.c1 != null) {
+//			    wire.c1.cx1 = wire.x1;
+//			    wire.c1.cy1 = wire.y1;
+//		    }
+//		    if(wire.c2 != null) {
+//			    wire.c2.cx2 = wire.x2;
+//			    wire.c2.cy2 = wire.y2;
+//		    }
+		    CircuitElm elm = new WireElm(wire.x1, wire.y1, wire.x2, wire.y2, 0, new StringTokenizer(""));
+		    elm.setPoints();
+		    elmList.add(elm);
+	    }
 	    for(Component comp : components) {
 	    	CircuitElm elm = null;
 	    	switch(comp.type) {
 			    case "capacitor":
-				    System.out.printf("Capacitor: %d %d, %d %d\n", comp.x, comp.y, comp.x + comp.width, comp.y + comp.height);
-				    elm = new CapacitorElm(comp.x, comp.y, comp.x + comp.width, comp.y + comp.height, 0, new StringTokenizer("32 0"));
-				    elm.setPoints();
-				    elmList.add(elm);
+				    System.out.printf("Capacitor: %d %d, %d %d\n", comp.cx1, comp.cy1, comp.cy1, comp.cy2);
+				    elm = new CapacitorElm(comp.cx1, comp.cy1, comp.cx2, comp.cy2, 0, new StringTokenizer("32 0"));
 			    	break;
 			    case "resistor":
-				    System.out.printf("Resistor: %d %d, %d %d\n", comp.x, comp.y, comp.x + comp.width, comp.y + comp.height);
-				    elm = new ResistorElm(comp.x, comp.y, comp.x + comp.width, comp.y + comp.height, 0, new StringTokenizer("32"));
-				    elm.setPoints();
-				    elmList.add(elm);
+				    System.out.printf("Resistor: %d %d, %d %d\n", comp.cx1, comp.cy1, comp.cy1, comp.cy2);
+				    elm = new ResistorElm(comp.cx1, comp.cy1, comp.cx2, comp.cy2, 0, new StringTokenizer("32"));
 				    break;
 		    }
-	    }
-    	for(Wire wire : wires) {
-		    System.out.printf("Wire: %d %d %d %d\n", wire.x1, wire.y1, wire.x2, wire.y2);
-	    	CircuitElm elm = new WireElm(wire.x1, wire.y1, wire.x2, wire.y2, 0, new StringTokenizer(""));
-		    elm.setPoints();
-		    elmList.add(elm);
+		    if(elm != null) {
+			    elm.setPoints();
+			    elmList.add(elm);
+		    }
 	    }
 	    needAnalyze();
     }
