@@ -187,7 +187,7 @@ public class Main {
                     int compID = 0;
                     double best = Double.POSITIVE_INFINITY;
                     for (int k = 0; k < comp.size(); k++) {
-                        if (comp.get(k).type.equals("junction") || comp.get(k).type.equals("crossover")) continue;
+                        if (comp.get(k).type.equals("junction")/* || comp.get(k).type.equals("crossover")*/) continue;
 
                         double alt = comp.get(k).distanceTo(sx, sy);
                         if (alt < comp.get(compID).distanceTo(sx, sy)) {

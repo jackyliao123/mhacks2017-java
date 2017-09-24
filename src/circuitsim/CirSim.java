@@ -802,6 +802,10 @@ public class CirSim extends Frame
 				    System.out.printf("Resistor: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cy[0], comp.cy[1]);
 				    elm = new ResistorElm(x1, y1, x2, y2, 0, new StringTokenizer("31"));
 				    break;
+			    case "diode":
+				    System.out.printf("Diode: %d %d, %d %d\n", comp.cx[0], comp.cy[0], comp.cy[0], comp.cy[1]);
+				    elm = new DiodeElm(x1, y1, x2, y2, 0, new StringTokenizer("31"));
+				    break;
 		    }
 		    if(elm != null) {
 			    elm.setPoints();
